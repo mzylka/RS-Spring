@@ -6,6 +6,7 @@ import com.rs.app.domain.entities.User;
 import com.rs.app.domain.enums.PublicationStatus;
 import com.rs.app.dto.blognews.BlogNewsDTO;
 import com.rs.app.dto.blognews.BlogNewsRequest;
+import com.rs.app.dto.comment.CommentRequest;
 import com.rs.app.dto.game.GameSimpleDTO;
 import com.rs.app.mappers.BlogNewsCommentMapper;
 import com.rs.app.mappers.BlogNewsMapper;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BlogNews Service Tests")
-class BlogNewsServiceTest {
+class BlogNewsServiceUnitTest {
     @Mock
     private BlogNewsRepo blogNewsRepo;
     @Mock
@@ -130,7 +131,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should find BlogNews with the title as such the search parameter")
-    void GetAllShouldReturnPageWithBlogNewsDTOThatHasTitleLikeSearchParam(){
+    void getAllShouldReturnPageWithBlogNewsDTOThatHasTitleLikeSearchParam(){
         //Given
         Page<BlogNews> page = new PageImpl<>(List.of(blogNews, blogNewsWithGame));
         final String searchParam = "title";
@@ -153,7 +154,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should not find any BlogNews, cause the search param doesn't correspond to any title")
-    void GetAllShouldReturnEmptyPage(){
+    void getAllShouldReturnEmptyPage(){
         //Given
         Page<BlogNews> page = new PageImpl<>(List.of());
         final String searchParam = "empty";
@@ -173,7 +174,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should find published BlogNews")
-    void GetAllPublishedShouldReturnPublishedBlogNews(){
+    void getAllPublishedShouldReturnPublishedBlogNews(){
         //Given
         Page<BlogNews> page = new PageImpl<>(List.of(blogNews));
         when(blogNewsRepo.findByStatus(PublicationStatus.PUBLISHED, pageable)).thenReturn(page);
@@ -193,7 +194,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should find published BlogNews with the same title such as search parameter")
-    void GetAllPublishedShouldReturnPublishedBlogNewsWithSearchParam(){
+    void getAllPublishedShouldReturnPublishedBlogNewsWithSearchParam(){
         //Given
         String searchParam = "title";
         Page<BlogNews> page = new PageImpl<>(List.of(blogNews));
@@ -215,7 +216,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should return Blog news")
-    void GetOneShouldReturnBlogNews(){
+    void getOneShouldReturnBlogNews(){
         final Long newsId = 1L;
         //Given
         when(blogNewsRepo.findById(newsId)).thenReturn(Optional.ofNullable(blogNews));
@@ -233,7 +234,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should return Exception")
-    void GetOneShouldReturnException(){
+    void getOneShouldReturnException(){
         final Long newsId = 3L;
         //Given
         when(blogNewsRepo.findById(newsId)).thenReturn(Optional.empty());
@@ -252,7 +253,7 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should save BlogNews without Game reference")
-    void ShouldSaveBlogNewsWithoutGame(){
+    void shouldSaveBlogNewsWithoutGame(){
         //Given
         Long userId = 1L;
         when(oAuth2User.getAttribute("userId")).thenReturn(userId);
@@ -278,27 +279,85 @@ class BlogNewsServiceTest {
 
     @Test
     @DisplayName("Should save BlogNews with Game reference")
-    void ShouldSaveBlogNewsWithGame(){
+    void shouldSaveBlogNewsWithGame(){
         //Given
         Long userId = 1L;
         when(oAuth2User.getAttribute("userId")).thenReturn(userId);
         when(mapper.fromRequest(blogNewsRequestWithGame)).thenReturn(blogNewsWithGame);
         when(userRepo.getReferenceById(userId)).thenReturn(user);
+        when(gameRepo.getReferenceById(blogNewsRequestWithGame.gameId())).thenReturn(game);
         when(blogNewsRepo.save(blogNews)).thenReturn(blogNews);
         when(mapper.toDto(blogNews)).thenReturn(blogNewsDTO);
 
         //When
-        final BlogNewsDTO result = blogNewsService.save(blogNewsRequest, oAuth2User);
+        final BlogNewsDTO result = blogNewsService.save(blogNewsRequestWithGame, oAuth2User);
 
         //Then
         assertNotNull(result);
         assertEquals(blogNewsDTO, result);
 
-        verify(mapper).fromRequest(blogNewsRequest);
+        verify(mapper).fromRequest(blogNewsRequestWithGame);
         verify(userRepo).getReferenceById(userId);
-        verify(blogNewsRepo).save(blogNews);
-        verify(mapper).toDto(blogNews);
+        verify(gameRepo).getReferenceById(blogNewsRequestWithGame.gameId());
+        verify(blogNewsRepo).save(blogNewsWithGame);
+        verify(mapper).toDto(blogNewsWithGame);
 
-        assertEquals(user, blogNews.getAuthor());
+        assertEquals(user, blogNewsWithGame.getAuthor());
+        assertEquals(game, blogNewsWithGame.getGame());
     }
+
+    @Test
+    @DisplayName("Should throw exc when userId is missing")
+    void shouldThrowWhenUserIDMissing(){
+        when(oAuth2User.getAttribute("userId")).thenReturn(null);
+
+        assertThrows(IllegalStateException.class, () -> blogNewsService.save(blogNewsRequest, oAuth2User));
+    }
+
+    @Test
+    @DisplayName("Should update BlogNews")
+    void shouldUpdateThrowWhenNotFound(){
+        Long blogNewsId = 5L;
+        when(blogNewsRepo.findById(blogNewsId)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> blogNewsService.update(blogNewsRequest, blogNewsId));
+        verify(blogNewsRepo).findById(blogNewsId);
+        verify(blogNewsRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should update BlogNews fields")
+    void shouldUpdateBlogNews(){
+        BlogNewsRequest blogNewsRequestNew = new BlogNewsRequest("TitleNew", "ContentNew", true, null);
+        when(blogNewsRepo.findById(1L)).thenReturn(Optional.of(blogNews));
+        when(blogNewsRepo.save(blogNews)).thenReturn(blogNews);
+        when(mapper.toDto(blogNews)).thenReturn(blogNewsDTO);
+
+        blogNewsService.update(blogNewsRequestNew, 1L);
+
+        assertEquals("TitleNew", blogNewsRequestNew.title());
+        assertEquals("ContentNew", blogNewsRequestNew.content());
+    }
+
+    @Test
+    @DisplayName("Should throw exc when BlogNews doesn't exist with a given id")
+    void shouldGetCommentsThrowWhenBlogNotExist(){
+        when(blogNewsRepo.findById(5L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> blogNewsService.getComments(5L));
+    }
+
+    @Test
+    @DisplayName("Should throw exc when BlogNews doesn't exist with a given id")
+    void shouldAddCommentThrowWhenBlogNotExist(){
+        when(blogNewsRepo.findById(5L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> blogNewsService.addComment(5L, new CommentRequest("Test"), 5L));
+    }
+
+    @Test
+    @DisplayName("Should throw exc when BlogNews doesn't exist with a given id")
+    void shouldAddCommentThrowWhenUserNotExist(){
+        when(userRepo.findById(5L)).thenReturn(Optional.empty());
+        assertThrows(EntityNotFoundException.class, () -> blogNewsService.addComment(5L, new CommentRequest("Test"), 5L));
+    }
+
 }
