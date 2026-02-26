@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("BlogNews Service Tests")
+@DisplayName("BlogNews Service Unit Tests")
 class BlogNewsServiceUnitTest {
     @Mock
     private BlogNewsRepo blogNewsRepo;
@@ -356,8 +356,9 @@ class BlogNewsServiceUnitTest {
     @Test
     @DisplayName("Should throw exc when BlogNews doesn't exist with a given id")
     void shouldAddCommentThrowWhenUserNotExist(){
+        when(blogNewsRepo.findById(1L)).thenReturn(Optional.of(blogNews));
         when(userRepo.findById(5L)).thenReturn(Optional.empty());
-        assertThrows(EntityNotFoundException.class, () -> blogNewsService.addComment(5L, new CommentRequest("Test"), 5L));
+        assertThrows(EntityNotFoundException.class, () -> blogNewsService.addComment(1L, new CommentRequest("Test"), 5L));
     }
 
 }
