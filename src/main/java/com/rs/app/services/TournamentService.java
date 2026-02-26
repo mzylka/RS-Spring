@@ -41,7 +41,6 @@ public class TournamentService {
         this.userRepo = userRepo;
     }
 
-    @PostAuthorize("")
     public TournamentDTO getOne(Long id){
         Tournament tournament = repo.findById(id).orElseThrow(() -> new EntityNotFoundException("Tournament hasn't been found"));
         return mapper.toDto(tournament);

@@ -46,7 +46,6 @@ public class GameService {
         return repo.findByTitleContainingIgnoreCaseAndStatusIs(q, PublicationStatus.PUBLISHED, pageable).map(mapper::toSimpleDto);
     }
 
-    @PostAuthorize("")
     public GameDTO getOne(Long id){
         return repo.findById(id).map(mapper::toDto).orElseThrow(() -> new EntityNotFoundException("Game has not been found by ID"));
     }

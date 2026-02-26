@@ -49,7 +49,6 @@ public class CommunityService {
         return repo.findByTitleContainingIgnoreCaseAndStatusIs(q, PublicationStatus.PUBLISHED, pageable).map(mapper::toSimpleDTO);
     }
 
-    @PostAuthorize("@permissionService.hasAccessToBlogNews(authentication, returnObject)")
     public CommunityDTO getOne(Long id){
         return repo.findById(id).map(mapper::toDto).orElseThrow(() -> new EntityNotFoundException("Community has not been found by ID"));
     }
@@ -77,7 +76,6 @@ public class CommunityService {
         repo.deleteById(id);
     }
 
-    @PostAuthorize("@permissionService.hasAccessToBlogNews(authentication, returnObject)")
     public CommunityDTO update(Long id, CommunityRequest communityRequest){
         Community existingCommunity = repo.findById(id).orElseThrow(() -> new EntityNotFoundException("Community has not been found"));
         existingCommunity.setTitle(communityRequest.name());
