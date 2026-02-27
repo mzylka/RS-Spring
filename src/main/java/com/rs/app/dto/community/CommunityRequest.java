@@ -1,11 +1,16 @@
 package com.rs.app.dto.community;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
 public record CommunityRequest(
-        String name,
-        String description,
+        @NotBlank String thumbnail,
+        @NotBlank String thumbnailMin,
+        @NotBlank String name,
+        @NotBlank String description,
         String websiteUrl,
         String discordUrl,
-        boolean isPublished,
+        @NotEmpty boolean isPublished,
         Long ownerId,
         Long gameId
 ) {

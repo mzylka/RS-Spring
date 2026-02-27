@@ -1,4 +1,6 @@
 package com.rs.app.dto.comment;
 
-public record CommentRequest(String content) {
+import jakarta.validation.constraints.NotBlank;
+
+public record CommentRequest(@NotBlank String content) {
 }

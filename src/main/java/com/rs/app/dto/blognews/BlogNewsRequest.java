@@ -1,12 +1,14 @@
 package com.rs.app.dto.blognews;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotEmpty;
 
 public record BlogNewsRequest(
+        @NotBlank String thumbnail,
+        @NotBlank String thumbnailMin,
         @NotBlank String title,
         @NotBlank String content,
-        @NotNull boolean published,
+        @NotEmpty boolean published,
         Long gameId
 ) {
 }
