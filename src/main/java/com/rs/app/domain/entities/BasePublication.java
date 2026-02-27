@@ -50,6 +50,7 @@ public class BasePublication {
 
     public void setTitle(String title) {
         this.title = title;
+        this.slug = Slugify.slug(title);
     }
 
     public String getSlug() {
