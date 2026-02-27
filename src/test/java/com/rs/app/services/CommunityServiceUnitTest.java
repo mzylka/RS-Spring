@@ -49,10 +49,10 @@ class CommunityServiceUnitTest {
 
     @BeforeEach
     void setUp() {
-        communityRequest = new CommunityRequest("Name", "test community", "websiteurl", "discordurl", true, 5L, 1L);
-        communityRequestNoOwner = new CommunityRequest("Name", "test community", "websiteurl", "discordurl", true, null, 1L);
-        communityRequestNoGame = new CommunityRequest("Name", "test community", "websiteurl", "discordurl", true, 5L, null);
-        communityRequestNoOwnerAndGame = new CommunityRequest("Name", "test community", "websiteurl", "discordurl", true, null, null);
+        communityRequest = new CommunityRequest("thumbnailUrl","thumbnailMinUrl","Name", "test community", "websiteurl", "discordurl", true, 5L, 1L);
+        communityRequestNoOwner = new CommunityRequest("thumbnailUrl","thumbnailMinUrl","Name", "test community", "websiteurl", "discordurl", true, null, 1L);
+        communityRequestNoGame = new CommunityRequest("thumbnailUrl","thumbnailMinUrl","Name", "test community", "websiteurl", "discordurl", true, 5L, null);
+        communityRequestNoOwnerAndGame = new CommunityRequest("thumbnailUrl","thumbnailMinUrl","Name", "test community", "websiteurl", "discordurl", true, null, null);
         community = new Community("Name", "test community", "websiteurl", "discordurl", PublicationStatus.PUBLISHED);
     }
 
@@ -97,7 +97,7 @@ class CommunityServiceUnitTest {
 
     @Test
     void shouldUpdateReturnUpdatedCommunityAsDTO(){
-        CommunityRequest communityRequestUpdated = new CommunityRequest("Name Updated", "test community", "", "", true, null, null);
+        CommunityRequest communityRequestUpdated = new CommunityRequest("thumbnailUrl","thumbnailMinUrl","Name Updated", "test community", "", "", true, null, null);
         Community updatedCommunity = new Community("Name updated", "test community", "", "", PublicationStatus.PUBLISHED);
         CommunityDTO communityDTO = new CommunityDTO(1L, "Name Updated", "name-updated", "test community", "", "", null, null, PublicationStatus.PUBLISHED, null);
 

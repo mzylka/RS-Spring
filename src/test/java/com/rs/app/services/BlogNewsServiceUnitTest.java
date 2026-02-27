@@ -78,8 +78,8 @@ class BlogNewsServiceUnitTest {
                 PublicationStatus.PUBLISHED
         );
         this.gameSimpleDTO = new GameSimpleDTO(1L, "Game", "game", "thumbnailUrl", "thumbnailMinUrl","iconUrl");
-        this.blogNewsRequest = new BlogNewsRequest("Title", "content", false, null);
-        this.blogNewsRequestWithGame = new BlogNewsRequest("Title2", "content2", false, 1L);
+        this.blogNewsRequest = new BlogNewsRequest("thumbnailUrl","thumbnailMinUrl","Title", "content", false, null);
+        this.blogNewsRequestWithGame = new BlogNewsRequest("thumbnailUrl","thumbnailMinUrl","Title2", "content2", false, 1L);
         this.blogNews = new BlogNews("Title", "content", PublicationStatus.PUBLISHED);
         this.blogNewsWithGame = new BlogNews("Title2", "content2", PublicationStatus.DRAFT);
         this.blogNewsWithGame.setGame(game);
@@ -328,7 +328,7 @@ class BlogNewsServiceUnitTest {
     @Test
     @DisplayName("Should update BlogNews fields")
     void shouldUpdateBlogNews(){
-        BlogNewsRequest blogNewsRequestNew = new BlogNewsRequest("TitleNew", "ContentNew", true, null);
+        BlogNewsRequest blogNewsRequestNew = new BlogNewsRequest("thumbnailUrl","thumbnailMinUrl","TitleNew", "ContentNew", true, null);
         when(blogNewsRepo.findById(1L)).thenReturn(Optional.of(blogNews));
         when(blogNewsRepo.save(blogNews)).thenReturn(blogNews);
         when(mapper.toDto(blogNews)).thenReturn(blogNewsDTO);
